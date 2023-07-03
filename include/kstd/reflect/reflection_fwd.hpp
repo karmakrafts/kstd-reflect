@@ -20,7 +20,7 @@
 #pragma once
 
 namespace kstd::reflect {
-    class RTTI;
+    struct RTTI;
 
     template<typename T>
     class TypeInfo;

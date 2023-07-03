@@ -21,26 +21,31 @@
 
 #include "reflection_fwd.hpp"
 #include "rtti.hpp"
+#include <kstd/defaults.hpp>
 
 namespace kstd::reflect {
     class RTTIRef final {
-        const RTTI& value;
+        const RTTI* _value;
 
         public:
-        RTTIRef(const RTTI& ref) noexcept :// NOLINT - allow implicit conversions
-                value(ref) {
+        KSTD_DEFAULT_MOVE_COPY(RTTIRef)
+
+        RTTIRef(const RTTI& value) noexcept :// NOLINT - allow implicit conversions
+                _value(&value) {
         }
 
+        ~RTTIRef() noexcept = default;
+
         [[nodiscard]] inline operator const RTTI&() const noexcept {// NOLINT - allow implicit conversions
-            return value;
+            return *_value;
         }
 
         [[nodiscard]] inline auto operator*() const noexcept -> const RTTI& {
-            return value;
+            return *_value;
         }
 
         [[nodiscard]] inline auto operator==(const RTTIRef& other) const noexcept -> bool {
-            return other.value == value;
+            return other._value == _value;
         }
     };
 }// namespace kstd::reflect

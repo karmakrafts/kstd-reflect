@@ -21,6 +21,7 @@
 
 #include <kstd/defaults.hpp>
 #include <kstd/meta.hpp>
+#include <kstd/utils.hpp>
 #include <string>
 
 #include "reflection_fwd.hpp"
@@ -87,8 +88,8 @@ namespace kstd::reflect {
         KSTD_DEFAULT_MOVE_COPY(FunctionInfo)
 
         FunctionInfo(std::string mangled_type_name, std::string type_name, const std::string_view& name) noexcept :
-                TypeInfo<R(ARGS...)>(std::move(mangled_type_name), std::move(type_name)),
-                _name(std::move(strip_name(name))),
+                TypeInfo<R(ARGS...)>(utils::move(mangled_type_name), utils::move(type_name)),
+                _name(utils::move(strip_name(name))),
                 _param_types({}),
                 _return_type(reinterpret_cast<const RTTI*>(&*lookup<void>())),// NOLINT
                 _flags({}) {
@@ -129,8 +130,8 @@ namespace kstd::reflect {
 
         template<usize INDEX>
         [[nodiscard]] inline auto get_param() const noexcept -> decltype(auto) {
-            return *reinterpret_cast<const TypeInfo<meta::PackElement<INDEX, meta::Pack<ARGS...>>>*>(
-                    _param_types[INDEX]);// NOLINT
+            return *reinterpret_cast<const TypeInfo<meta::PackElement<INDEX, meta::Pack<ARGS...>>>*>(// NOLINT
+                    _param_types[INDEX]);
         }
 
         [[nodiscard, maybe_unused]] inline constexpr auto get_param_count() const noexcept -> usize {

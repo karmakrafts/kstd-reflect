@@ -27,8 +27,7 @@
 #include "reflection_fwd.hpp"
 
 namespace kstd::reflect {
-    class RTTI {
-        public:
+    struct RTTI {
         KSTD_DEFAULT_MOVE_COPY(RTTI)
 
         RTTI() noexcept = default;
@@ -49,7 +48,7 @@ namespace kstd::reflect {
 
         template<typename T>
         [[nodiscard, maybe_unused]] inline auto as_type() const noexcept -> const TypeInfo<T>& {
-            return reinterpret_cast<const TypeInfo<T>&>(*this);// NOLINT
+            return static_cast<const TypeInfo<T>&>(*this);// NOLINT
         }
 
         template<typename T>
@@ -61,7 +60,7 @@ namespace kstd::reflect {
                 return make_error<const VariableInfo<T>&>("Invalid element type"sv);
             }
 
-            return make_ok<const VariableInfo<T>&>(reinterpret_cast<const VariableInfo<T>&>(*this));// NOLINT
+            return make_ok<const VariableInfo<T>&>(static_cast<const VariableInfo<T>&>(*this));// NOLINT
         }
 
         template<typename ET, typename T>
@@ -72,7 +71,7 @@ namespace kstd::reflect {
                 return make_error<const FieldInfo<ET, T>&>("Invalid element type"sv);
             }
 
-            return make_ok<const FieldInfo<ET, T>&>(reinterpret_cast<const FieldInfo<ET, T>&>(*this));// NOLINT
+            return make_ok<const FieldInfo<ET, T>&>(static_cast<const FieldInfo<ET, T>&>(*this));// NOLINT
         }
 
         template<typename R, typename... ARGS>
@@ -85,7 +84,7 @@ namespace kstd::reflect {
             }
 
             return make_ok<const FunctionInfo<R, ARGS...>&>(
-                    reinterpret_cast<const FunctionInfo<R, ARGS...>&>(*this));// NOLINT
+                    static_cast<const FunctionInfo<R, ARGS...>&>(*this));// NOLINT
         }
 
         template<typename ET, typename R, typename... ARGS>
@@ -98,7 +97,7 @@ namespace kstd::reflect {
             }
 
             return make_ok<const MemberFunctionInfo<ET, R, ARGS...>&>(
-                    reinterpret_cast<const MemberFunctionInfo<ET, R, ARGS...>&>(*this));// NOLINT
+                    static_cast<const MemberFunctionInfo<ET, R, ARGS...>&>(*this));// NOLINT
         }
 
         [[nodiscard]] inline auto operator==(const RTTI& other) const noexcept -> bool {

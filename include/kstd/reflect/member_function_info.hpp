@@ -21,6 +21,7 @@
 
 #include <fmt/format.h>
 #include <kstd/defaults.hpp>
+#include <kstd/utils.hpp>
 #include <string>
 #include <string_view>
 
@@ -38,22 +39,22 @@ namespace kstd::reflect {
 
         MemberFunctionInfo(std::string mangled_type_name, std::string type_name, const RTTI* enclosing_type,
                            const std::string_view& name) noexcept :
-                FunctionInfo<R, ARGS...>(std::move(mangled_type_name), std::move(type_name), name),
+                FunctionInfo<R, ARGS...>(utils::move(mangled_type_name), utils::move(type_name), name),
                 _enclosing_type(enclosing_type) {
         }
 
         ~MemberFunctionInfo() noexcept override = default;
 
-        [[nodiscard]] auto get_element_type() const noexcept -> ElementType final {
+        [[nodiscard]] auto get_element_type() const noexcept -> ElementType override {
             return ElementType::MEMBER_FUNCTION;
         }
 
-        [[nodiscard]] auto to_string() const noexcept -> std::string final {
+        [[nodiscard]] auto to_string() const noexcept -> std::string override {
             return fmt::format("{}::{}:{}", _enclosing_type->get_mangled_type_name(), this->_name,
                                this->get_mangled_type_name());
         }
 
-        [[nodiscard]] auto is_same(const RTTI& other) const noexcept -> bool final {
+        [[nodiscard]] auto is_same(const RTTI& other) const noexcept -> bool override {
             return other.get_element_type() == ElementType::MEMBER_FUNCTION &&
                    *(other.template as_member_function<ET, R, ARGS...>()) == *this;
         }

@@ -42,11 +42,11 @@ namespace kstd::reflect {
 
         ~TypeInfo() noexcept override = default;
 
-        [[nodiscard]] auto get_mangled_type_name() const noexcept -> const std::string& final {
+        [[nodiscard]] auto get_mangled_type_name() const noexcept -> const std::string& override {
             return _mangled_type_name;
         }
 
-        [[nodiscard]] auto get_type_name() const noexcept -> const std::string& final {
+        [[nodiscard]] auto get_type_name() const noexcept -> const std::string& override {
             return _type_name;
         }
 

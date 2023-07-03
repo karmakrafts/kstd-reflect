@@ -97,8 +97,9 @@ namespace kstd::reflect {
         std::unordered_map<std::string, std::unique_ptr<RTTI>> _types;// NOLINT
 
         template<typename T, typename RI, typename... ARGS>
-            requires(std::is_convertible_v<RI*, RTTI*>)
         [[nodiscard]] inline auto lookup_named(const std::string& key, ARGS&&... args) noexcept -> Result<const RI&> {
+            static_assert(std::is_convertible_v<RI*, RTTI*>, "Pointer types are not polymorphically convertible");
+
             if(!_types.contains(key)) {
                 auto result = get_type_name<T>();
 
@@ -113,8 +114,8 @@ namespace kstd::reflect {
         }
 
         template<typename T, typename RI, typename... ARGS>
-            requires(std::is_convertible_v<RI*, RTTI*>)
         [[nodiscard]] inline auto lookup_default(ARGS&&... args) noexcept -> Result<const RI&> {
+            static_assert(std::is_convertible_v<RI*, RTTI*>, "Pointer types are not polymorphically convertible");
             return lookup_named<T, RI, ARGS...>(get_mangled_type_name<T>(), std::forward<ARGS>(args)...);
         }
     }// namespace
@@ -211,20 +212,20 @@ namespace kstd::reflect {
     // Reflective instantiation
 
     template<typename T, typename... ARGS>
-        requires(std::is_constructible_v<T, ARGS...>)
     [[nodiscard]] inline auto make(const TypeInfo<T>&, ARGS&&... args) noexcept -> T {// NOLINT
+        static_assert(std::is_constructible_v<T, ARGS...>, "Type is not constructible with given arguments");
         return T {std::forward<ARGS>(args)...};
     }
 
     template<typename T, typename... ARGS>
-        requires(std::is_constructible_v<T, ARGS...>)
     [[nodiscard]] inline auto make_shared(const TypeInfo<T>&, ARGS&&... args) noexcept -> std::shared_ptr<T> {// NOLINT
+        static_assert(std::is_constructible_v<T, ARGS...>, "Type is not constructible with given arguments");
         return std::make_shared<T, ARGS...>(std::forward<ARGS>(args)...);
     }
 
     template<typename T, typename... ARGS>
-        requires(std::is_constructible_v<T, ARGS...>)
     [[nodiscard]] inline auto make_unique(const TypeInfo<T>&, ARGS&&... args) noexcept -> std::unique_ptr<T> {// NOLINT
+        static_assert(std::is_constructible_v<T, ARGS...>, "Type is not constructible with given arguments");
         return std::make_unique<T, ARGS...>(std::forward<ARGS>(args)...);
     }
 }// namespace kstd::reflect
