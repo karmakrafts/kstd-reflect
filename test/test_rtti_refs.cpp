@@ -33,11 +33,11 @@ TEST(kstd_reflect, TestRTTIRefSet) {
     types.insert(*KSTD_LOOKUP_FIELD_T(foo::TestStruct, value3));
 
     ASSERT_EQ(types.size(), 5);
-    ASSERT_TRUE(types.contains(*KSTD_LOOKUP_FIELD_T(foo::TestStruct, data1)));
-    ASSERT_TRUE(types.contains(*KSTD_LOOKUP_FIELD_T(foo::TestStruct, data2)));
-    ASSERT_TRUE(types.contains(*KSTD_LOOKUP_FIELD_T(foo::TestStruct, value1)));
-    ASSERT_TRUE(types.contains(*KSTD_LOOKUP_FIELD_T(foo::TestStruct, value2)));
-    ASSERT_TRUE(types.contains(*KSTD_LOOKUP_FIELD_T(foo::TestStruct, value3)));
+    ASSERT_TRUE(types.find(*KSTD_LOOKUP_FIELD_T(foo::TestStruct, data1)) != types.end());
+    ASSERT_TRUE(types.find(*KSTD_LOOKUP_FIELD_T(foo::TestStruct, data2)) != types.end());
+    ASSERT_TRUE(types.find(*KSTD_LOOKUP_FIELD_T(foo::TestStruct, value1)) != types.end());
+    ASSERT_TRUE(types.find(*KSTD_LOOKUP_FIELD_T(foo::TestStruct, value2)) != types.end());
+    ASSERT_TRUE(types.find(*KSTD_LOOKUP_FIELD_T(foo::TestStruct, value3)) != types.end());
 }
 
 TEST(kstd_reflect, TestRTTIRefMap) {
