@@ -30,7 +30,7 @@
 
 #include <fmt/format.h>
 
-#ifndef COMPILER_MSVC
+#if !defined(COMPILER_MSVC) && !defined(PLATFORM_WINDOWS)
 #include <cxxabi.h>
 #endif
 
