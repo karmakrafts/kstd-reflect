@@ -80,8 +80,8 @@ namespace kstd::reflect {
             _flags.is_override = this->_type_name.find("override") != std::string::npos;
             _flags.is_final = this->_type_name.find("final") != std::string::npos;
             _flags.is_noexcept = this->_type_name.find("noexcept") != std::string::npos;
-            _flags.is_leading_const = this->_type_name.starts_with("const");
-            _flags.is_trailing_const = this->_type_name.ends_with("const");
+            _flags.is_leading_const = this->_type_name.find("const") == 0;
+            _flags.is_trailing_const = this->_type_name.rfind("const") == 0;
         }
 
         public:

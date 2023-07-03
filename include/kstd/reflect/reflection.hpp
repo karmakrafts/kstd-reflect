@@ -63,7 +63,7 @@ namespace kstd::reflect {
     namespace {
         template<typename T>
         [[nodiscard]] inline auto get_mangled_type_name() noexcept -> std::string {
-#ifdef COMPILER_MSVC
+#if defined(COMPILER_MSVC) || (defined(PLATFORM_WINDOWS) && defined(COMPILER_CLANG))
             return typeid(T).raw_name();// MSVC provides its own field for the mangled name
 #else
             return typeid(T).name();
@@ -74,7 +74,7 @@ namespace kstd::reflect {
         [[nodiscard]] inline auto get_type_name() noexcept -> Result<std::string> {
             using namespace std::string_view_literals;
 
-#ifdef COMPILER_MSVC
+#if defined(COMPILER_MSVC) || (defined(PLATFORM_WINDOWS) && defined(COMPILER_CLANG))
             return typeid(T).name();// MSVC uses the regular name field for the unmangled name
 #else
             i32 status = 0;
