@@ -100,7 +100,7 @@ namespace kstd::reflect {
         [[nodiscard]] inline auto lookup_named(const std::string& key, ARGS&&... args) noexcept -> Result<const RI&> {
             static_assert(std::is_convertible_v<RI*, RTTI*>, "Pointer types are not polymorphically convertible");
 
-            if(!_types.contains(key)) {
+            if(_types.find(key) == _types.end()) {
                 auto result = get_type_name<T>();
 
                 if(!result) {
