@@ -39,8 +39,14 @@ namespace kstd::reflect {
 
     namespace {
         template<typename T, typename... R>
-        inline auto parse_params(std::vector<const RTTI*>& param_types) noexcept {
-            param_types.push_back(&*lookup<T>());
+        inline auto parse_params(std::vector<const RTTI*>& param_types) noexcept -> void {
+            auto type_result = lookup<T>();
+
+            if(!type_result) {
+                return;
+            }
+
+            param_types.push_back(&type_result.borrow());
 
             if constexpr(sizeof...(R) > 0) {
                 parse_params<R...>(param_types);
@@ -48,8 +54,14 @@ namespace kstd::reflect {
         }
 
         template<typename R, typename... ARGS>
-        inline auto parse_signature(const RTTI*& return_type, std::vector<const RTTI*>& param_types) noexcept {
-            return_type = &*lookup<R>();
+        inline auto parse_signature(const RTTI*& return_type, std::vector<const RTTI*>& param_types) noexcept -> void {
+            auto return_type_result = lookup<R>();
+
+            if(!return_type_result) {
+                return;
+            }
+
+            return_type = &return_type_result.borrow();
             param_types.reserve(sizeof...(ARGS));
             parse_params<ARGS...>(param_types);
         }
@@ -75,7 +87,7 @@ namespace kstd::reflect {
         }
 
         private:
-        inline auto parse_flags() noexcept {
+        inline auto parse_flags() noexcept -> void {
             _flags.is_virtual = this->_type_name.find("virtual") != std::string::npos;
             _flags.is_override = this->_type_name.find("override") != std::string::npos;
             _flags.is_final = this->_type_name.find("final") != std::string::npos;
@@ -91,7 +103,7 @@ namespace kstd::reflect {
                 TypeInfo<R(ARGS...)>(utils::move(mangled_type_name), utils::move(type_name)),
                 _name(utils::move(strip_name(name))),
                 _param_types({}),
-                _return_type(reinterpret_cast<const RTTI*>(&*lookup<void>())),// NOLINT
+                _return_type(reinterpret_cast<const RTTI*>(&lookup<void>().borrow())),// NOLINT
                 _flags({}) {
             parse_flags();// Parse function flags
             parse_signature<R, ARGS...>(_return_type, _param_types);
