@@ -81,9 +81,9 @@ namespace kstd::reflect {
             auto* ptr = abi::__cxa_demangle(mangled_name.c_str(), nullptr, nullptr, &status);
 
             switch(status) {
-                case -1: return Error("Could not allocate memory to demangle"s);
-                case -2: return Error("Not a valid mangled name"s);
-                case -3: return Error("Invalid argument"s);
+                case -1: return Error {"Could not allocate memory to demangle"s};
+                case -2: return Error {"Not a valid mangled name"s};
+                case -3: return Error {"Invalid argument"s};
                 default: break;
             }
 
