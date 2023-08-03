@@ -21,9 +21,9 @@
 #include <gtest/gtest.h>
 #include <kstd/reflect/reflection.hpp>
 
-TEST(kstd_reflect, TestFieldsByRef) {
-    foo::TestStruct s {};
-    const auto info = KSTD_LOOKUP_FIELD(s, data1);
+TEST(kstd_reflect, test_fields_by_ref) {
+    foo::TestStruct value {};
+    const auto info = KSTD_LOOKUP_FIELD(value, data1);
 
     ASSERT_EQ(info->get_element_type(), kstd::reflect::ElementType::FIELD);
     ASSERT_EQ(info->get_name(), "data1");
@@ -33,12 +33,12 @@ TEST(kstd_reflect, TestFieldsByRef) {
     ASSERT_EQ(info->is_primitive(), false);
 
     kstd::usize some_value = 1337;
-    info->set(&s, &some_value);
+    info->set(&value, &some_value);
 
-    ASSERT_EQ(info->get(&s), &some_value);
+    ASSERT_EQ(info->get(&value), &some_value);
 }
 
-TEST(kstd_reflect, TestFieldsByType) {
+TEST(kstd_reflect, test_fields_by_type) {
     const auto& info = KSTD_LOOKUP_FIELD_T(foo::TestStruct, data2);
 
     ASSERT_EQ(info->get_element_type(), kstd::reflect::ElementType::FIELD);
@@ -48,9 +48,9 @@ TEST(kstd_reflect, TestFieldsByType) {
     ASSERT_EQ(info->get_alignment(), alignof(void*));
     ASSERT_EQ(info->is_primitive(), false);
 
-    foo::TestStruct s {};
+    foo::TestStruct value {};
     kstd::usize some_value = 1337;
-    info->set(&s, &some_value);
+    info->set(&value, &some_value);
 
-    ASSERT_EQ(info->get(&s), &some_value);
+    ASSERT_EQ(info->get(&value), &some_value);
 }

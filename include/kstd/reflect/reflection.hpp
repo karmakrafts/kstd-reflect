@@ -64,33 +64,32 @@ namespace kstd::reflect {
         template<typename T>
         [[nodiscard]] inline auto get_mangled_type_name() noexcept -> std::string {
 #if defined(COMPILER_MSVC) || (defined(PLATFORM_WINDOWS) && defined(COMPILER_CLANG))
-            return std::string(typeid(T).raw_name());// MSVC provides its own field for the mangled name
+            return {typeid(T).raw_name()};// MSVC provides its own field for the mangled name
 #else
-            return std::string(typeid(T).name());
+            return {typeid(T).name()};
 #endif
         }
 
         template<typename T>
         [[nodiscard]] inline auto get_type_name() noexcept -> Result<std::string> {
-            using namespace std::string_view_literals;
-
 #if defined(COMPILER_MSVC) || (defined(PLATFORM_WINDOWS) && defined(COMPILER_CLANG))
-            return make_ok(std::string(typeid(T).name()));// MSVC uses the regular name field for the unmangled name
+            return {typeid(T).name()};// MSVC uses the regular name field for the unmangled name
 #else
+            using namespace std::string_literals;
             i32 status = 0;
             const auto mangled_name = get_mangled_type_name<T>();
             auto* ptr = abi::__cxa_demangle(mangled_name.c_str(), nullptr, nullptr, &status);
 
             switch(status) {
-                case -1: return make_error<std::string>("Could not allocate memory to demangle"sv);
-                case -2: return make_error<std::string>("Not a valid mangled name"sv);
-                case -3: return make_error<std::string>("Invalid argument"sv);
+                case -1: return Error("Could not allocate memory to demangle"s);
+                case -2: return Error("Not a valid mangled name"s);
+                case -3: return Error("Invalid argument"s);
                 default: break;
             }
 
-            auto result = std::string(ptr);
-            free(ptr);             // Since __cxa_demangle malloc's it's result, we need to free it
-            return make_ok(result);// MoR
+            std::string result {ptr};
+            free(ptr);    // Since __cxa_demangle malloc's it's result, we need to free it
+            return result;// MoR
 #endif
         }
 
@@ -104,13 +103,13 @@ namespace kstd::reflect {
                 auto result = get_type_name<T>();
 
                 if(!result) {
-                    return result.template forward_error<const RI&>();
+                    return result.template forward<const RI&>();
                 }
 
                 _types[key] = std::make_unique<RI>(get_mangled_type_name<T>(), *result, std::forward<ARGS>(args)...);
             }
 
-            return make_ok<const RI&>(*reinterpret_cast<const RI*>(_types[key].get()));// NOLINT
+            return *reinterpret_cast<const RI*>(_types[key].get());// NOLINT
         }
 
         template<typename T, typename RI, typename... ARGS>
@@ -141,14 +140,14 @@ namespace kstd::reflect {
     }
 
     template<typename R, typename... ARGS>
-    [[nodiscard]] inline auto lookup_function(R(ARGS...), const std::string_view& name) noexcept// NOLINT
+    [[nodiscard]] inline auto lookup_function(R(ARGS...), const std::string& name) noexcept// NOLINT
             -> Result<const FunctionInfo<R, ARGS...>&> {
         const auto key = fmt::format("{}({})", name, get_mangled_type_name<R(ARGS...)>());
         return lookup_named<R(ARGS...), FunctionInfo<R, ARGS...>>(key, name);
     }
 
     template<typename ET, typename R, typename... ARGS>
-    [[nodiscard]] inline auto lookup_function(R (ET::*)(ARGS...), const std::string_view& name) noexcept// NOLINT
+    [[nodiscard]] inline auto lookup_function(R (ET::*)(ARGS...), const std::string& name) noexcept// NOLINT
             -> Result<const MemberFunctionInfo<ET, R, ARGS...>&> {
         const auto enclosing_type_result = lookup<ET>();
 
@@ -163,50 +162,50 @@ namespace kstd::reflect {
     }
 
     template<typename ET, typename R, typename... ARGS>
-    [[nodiscard]] inline auto lookup_function(R (ET::*)(ARGS...) const, const std::string_view& name) noexcept// NOLINT
+    [[nodiscard]] inline auto lookup_function(R (ET::*)(ARGS...) const, const std::string& name) noexcept// NOLINT
             -> Result<const MemberFunctionInfo<ET, R, ARGS...>&> {
         const auto enclosing_type_result = lookup<ET>();
 
         if(!enclosing_type_result) {
-            return enclosing_type_result.template forward_error<const MemberFunctionInfo<ET, R, ARGS...>&>();
+            return enclosing_type_result.template forward<const MemberFunctionInfo<ET, R, ARGS...>&>();
         }
 
         const auto key = fmt::format("{}::{}({})", enclosing_type_result->get_mangled_type_name(), name,
                                      get_mangled_type_name<R (ET::*)(ARGS...) const>());
-        return lookup_named<R (ET::*)(ARGS...) const, MemberFunctionInfo<ET, R, ARGS...>>(
-                key, &enclosing_type_result.borrow(), name);
+        return lookup_named<R (ET::*)(ARGS...) const, MemberFunctionInfo<ET, R, ARGS...>>(key, &*enclosing_type_result,
+                                                                                          name);
     }
 
     template<typename T>
-    [[nodiscard]] inline auto lookup_variable(T&, const std::string_view& name) noexcept// NOLINT
+    [[nodiscard]] inline auto lookup_variable(T&, const std::string& name) noexcept// NOLINT
             -> Result<const VariableInfo<T>&> {
         return lookup_named<T, VariableInfo<T>>(std::string(name), name);
     }
 
     template<typename ET, typename T>
-    [[nodiscard]] inline auto lookup_field(T&, const std::string_view& name, usize offset) noexcept// NOLINT
+    [[nodiscard]] inline auto lookup_field(T&, const std::string& name, usize offset) noexcept// NOLINT
             -> Result<const FieldInfo<ET, T>&> {
         const auto enclosing_type_result = lookup<ET>();
 
         if(!enclosing_type_result) {
-            return enclosing_type_result.template forward_error<const FieldInfo<ET, T>&>();
+            return enclosing_type_result.template forward<const FieldInfo<ET, T>&>();
         }
 
         const auto key = fmt::format("{}::{}", enclosing_type_result->get_mangled_type_name(), name);
-        return lookup_named<T, FieldInfo<ET, T>>(key, &enclosing_type_result.borrow(), name, offset);
+        return lookup_named<T, FieldInfo<ET, T>>(key, &*enclosing_type_result, name, offset);
     }
 
     template<typename ET, typename T>
-    [[nodiscard]] inline auto lookup_field(const std::string_view& name, usize offset) noexcept
+    [[nodiscard]] inline auto lookup_field(const std::string& name, usize offset) noexcept
             -> Result<const FieldInfo<ET, T>&> {
         const auto enclosing_type_result = lookup<ET>();
 
         if(!enclosing_type_result) {
-            return enclosing_type_result.template forward_error<const FieldInfo<ET, T>&>();
+            return enclosing_type_result.template forward<const FieldInfo<ET, T>&>();
         }
 
         const auto key = fmt::format("{}::{}", enclosing_type_result->get_mangled_type_name(), name);
-        return lookup_named<T, FieldInfo<ET, T>>(key, &enclosing_type_result.borrow(), name, offset);
+        return lookup_named<T, FieldInfo<ET, T>>(key, &*enclosing_type_result, name, offset);
     }
 
     // Reflective instantiation

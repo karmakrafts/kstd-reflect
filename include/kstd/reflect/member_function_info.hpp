@@ -21,26 +21,33 @@
 
 #include <fmt/format.h>
 #include <kstd/defaults.hpp>
+#include <kstd/pack.hpp>
 #include <kstd/utils.hpp>
 #include <string>
-#include <string_view>
 
 #include "element_type.hpp"
 #include "reflection_fwd.hpp"
 
 namespace kstd::reflect {
     template<typename ET, typename R, typename... ARGS>
-    class MemberFunctionInfo : public FunctionInfo<R, ARGS...> {
+    struct MemberFunctionInfo : public FunctionInfo<R, ARGS...> {
+        using EnclosingType = ET;
+        using ReturnType = R;
+        using ParameterTypes [[maybe_unused]] = Pack<ARGS...>;
+
+        private:
+        using Self = MemberFunctionInfo<EnclosingType, ReturnType, ARGS...>;
+
         protected:
         const RTTI* _enclosing_type;// NOLINT
 
         public:
-        KSTD_DEFAULT_MOVE_COPY(MemberFunctionInfo)
+        KSTD_DEFAULT_MOVE_COPY(MemberFunctionInfo, Self)
 
         MemberFunctionInfo(std::string mangled_type_name, std::string type_name, const RTTI* enclosing_type,
-                           const std::string_view& name) noexcept :
-                FunctionInfo<R, ARGS...>(utils::move(mangled_type_name), utils::move(type_name), name),
-                _enclosing_type(enclosing_type) {
+                           const std::string& name) noexcept :
+                FunctionInfo<R, ARGS...>(std::move(mangled_type_name), std::move(type_name), name),
+                _enclosing_type {enclosing_type} {
         }
 
         ~MemberFunctionInfo() noexcept override = default;
@@ -56,11 +63,11 @@ namespace kstd::reflect {
 
         [[nodiscard]] auto is_same(const RTTI& other) const noexcept -> bool override {
             return other.get_element_type() == ElementType::MEMBER_FUNCTION &&
-                   *(other.template as_member_function<ET, R, ARGS...>()) == *this;
+                   *(other.template as_member_function<EnclosingType, ReturnType, ARGS...>()) == *this;
         }
 
-        [[nodiscard, maybe_unused]] inline auto get_enclosing_type() const noexcept -> const TypeInfo<ET>& {
-            return *reinterpret_cast<const TypeInfo<ET>*>(_enclosing_type);// NOLINT
+        [[nodiscard, maybe_unused]] inline auto get_enclosing_type() const noexcept -> const TypeInfo<EnclosingType>& {
+            return *reinterpret_cast<const TypeInfo<EnclosingType>*>(_enclosing_type);// NOLINT
         }
 
         template<typename OET, typename OR, typename... OARGS>

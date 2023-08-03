@@ -23,7 +23,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
-TEST(kstd_reflect, TestRTTIRefSet) {
+TEST(kstd_reflect, test_rtti_ref_set) {
     std::unordered_set<kstd::reflect::RTTIRef> types;
 
     types.insert(*KSTD_LOOKUP_FIELD_T(foo::TestStruct, data1));
@@ -40,7 +40,7 @@ TEST(kstd_reflect, TestRTTIRefSet) {
     ASSERT_TRUE(types.find(*KSTD_LOOKUP_FIELD_T(foo::TestStruct, value3)) != types.end());
 }
 
-TEST(kstd_reflect, TestRTTIRefMap) {
+TEST(kstd_reflect, test_rtti_ref_map) {
     std::unordered_map<kstd::reflect::RTTIRef, std::string> types;
 
     types.insert_or_assign(*KSTD_LOOKUP_FIELD_T(foo::TestStruct, data1), "foo");

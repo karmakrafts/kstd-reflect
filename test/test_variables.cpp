@@ -20,7 +20,7 @@
 #include <gtest/gtest.h>
 #include <kstd/reflect/reflection.hpp>
 
-TEST(kstd_reflect, TestVariables) {
+TEST(kstd_reflect, test_variables) {
     kstd::usize some_var = 1337;
     const auto info = KSTD_LOOKUP_VAR(some_var);
 

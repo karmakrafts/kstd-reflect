@@ -20,7 +20,7 @@
 #include <gtest/gtest.h>
 #include <kstd/reflect/reflection.hpp>
 
-TEST(kstd_reflect, TestExpressions) {
+TEST(kstd_reflect, test_expressions) {
     const auto info = KSTD_LOOKUP_EXPR(20 + 20);
     ASSERT_TRUE(info);
     ASSERT_EQ(info->get_element_type(), kstd::reflect::ElementType::TYPE);

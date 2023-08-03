@@ -23,19 +23,19 @@ namespace kstd::reflect {
     struct RTTI;
 
     template<typename T>
-    class TypeInfo;
+    struct TypeInfo;
 
     template<typename T>
-    class VariableInfo;
+    struct VariableInfo;
 
     template<typename ET, typename T>
-    class FieldInfo;
+    struct FieldInfo;
 
     template<typename R, typename... ARGS>
-    class FunctionInfo;
+    struct FunctionInfo;
 
     template<typename ET, typename R, typename... ARGS>
-    class MemberFunctionInfo;
+    struct MemberFunctionInfo;
 
     template<typename T>
     [[nodiscard]] inline auto lookup() noexcept -> Result<const TypeInfo<T>&>;

@@ -28,10 +28,10 @@ namespace kstd::reflect {
         const RTTI* _value;
 
         public:
-        KSTD_DEFAULT_MOVE_COPY(RTTIRef)
+        KSTD_DEFAULT_MOVE_COPY(RTTIRef, RTTIRef)
 
         RTTIRef(const RTTI& value) noexcept :// NOLINT - allow implicit conversions
-                _value(&value) {
+                _value {&value} {
         }
 
         ~RTTIRef() noexcept = default;
@@ -54,6 +54,6 @@ namespace kstd::reflect {
 template<>
 struct std::hash<kstd::reflect::RTTIRef> final {
     auto operator()(kstd::reflect::RTTIRef const& value) const noexcept -> std::size_t {
-        return std::hash<std::string>()((*value).to_string());
+        return std::hash<std::string> {}((*value).to_string());
     }
 };

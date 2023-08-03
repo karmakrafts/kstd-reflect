@@ -29,12 +29,17 @@
 
 namespace kstd::reflect {
     template<typename T>
-    class VariableInfo : public TypeInfo<T> {
+    struct VariableInfo : public TypeInfo<T> {
+        using Type = T;
+
+        private:
+        using Self = VariableInfo<Type>;
+
         protected:
         std::string _name;// NOLINT
 
-        [[nodiscard]] inline auto strip_name(const std::string_view& name) noexcept -> std::string {
-            std::string result(name);
+        [[nodiscard]] inline auto strip_name(const std::string& name) noexcept -> std::string {
+            std::string result {name};
 
             if(name.find(".") != std::string::npos) {// Strip field refs
                 const auto index = result.find_last_of('.');
@@ -50,11 +55,11 @@ namespace kstd::reflect {
         }
 
         public:
-        KSTD_DEFAULT_MOVE_COPY(VariableInfo)
+        KSTD_DEFAULT_MOVE_COPY(VariableInfo, Self)
 
-        VariableInfo(std::string mangled_type_name, std::string type_name, const std::string_view& name) noexcept :
-                TypeInfo<T>(std::move(mangled_type_name), std::move(type_name)),
-                _name(std::move(strip_name(name))) {
+        VariableInfo(std::string mangled_type_name, std::string type_name, const std::string& name) noexcept :
+                TypeInfo<Type>(std::move(mangled_type_name), std::move(type_name)),
+                _name {strip_name(name)} {
         }
 
         ~VariableInfo() noexcept override = default;

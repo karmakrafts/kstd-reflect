@@ -20,7 +20,7 @@
 #pragma once
 
 #include <kstd/defaults.hpp>
-#include <kstd/meta.hpp>
+#include <kstd/pack.hpp>
 #include <kstd/utils.hpp>
 #include <string>
 
@@ -46,7 +46,7 @@ namespace kstd::reflect {
                 return;
             }
 
-            param_types.push_back(&type_result.borrow());
+            param_types.push_back(&*type_result);
 
             if constexpr(sizeof...(R) > 0) {
                 parse_params<R...>(param_types);
@@ -61,22 +61,28 @@ namespace kstd::reflect {
                 return;
             }
 
-            return_type = &return_type_result.borrow();
+            return_type = &*return_type_result;
             param_types.reserve(sizeof...(ARGS));
             parse_params<ARGS...>(param_types);
         }
     }// namespace
 
     template<typename R, typename... ARGS>
-    class FunctionInfo : public TypeInfo<R(ARGS...)> {
+    struct FunctionInfo : public TypeInfo<R(ARGS...)> {
+        using ReturnType = R;
+        using ParameterTypes [[maybe_unused]] = Pack<ARGS...>;
+
+        private:
+        using Self = FunctionInfo<ReturnType, ARGS...>;
+
         protected:
         std::string _name;                    // NOLINT
         std::vector<const RTTI*> _param_types;// NOLINT
         const RTTI* _return_type;             // NOLINT
         FunctionFlags _flags;                 // NOLINT
 
-        [[nodiscard]] inline auto strip_name(const std::string_view& name) noexcept -> std::string {
-            std::string result(name);
+        [[nodiscard]] inline auto strip_name(const std::string& name) noexcept -> std::string {
+            std::string result {name};
 
             if(result.find("::") != std::string::npos) {// Name contains namespace qualifier(s)
                 const auto index = result.find_last_of("::");
@@ -97,16 +103,15 @@ namespace kstd::reflect {
         }
 
         public:
-        KSTD_DEFAULT_MOVE_COPY(FunctionInfo)
+        KSTD_DEFAULT_MOVE_COPY(FunctionInfo, Self)
 
-        FunctionInfo(std::string mangled_type_name, std::string type_name, const std::string_view& name) noexcept :
-                TypeInfo<R(ARGS...)>(utils::move(mangled_type_name), utils::move(type_name)),
-                _name(utils::move(strip_name(name))),
-                _param_types({}),
-                _return_type(reinterpret_cast<const RTTI*>(&lookup<void>().borrow())),// NOLINT
-                _flags({}) {
+        FunctionInfo(std::string mangled_type_name, std::string type_name, const std::string& name) noexcept :
+                TypeInfo<ReturnType(ARGS...)>(std::move(mangled_type_name), std::move(type_name)),
+                _name {strip_name(name)},
+                _return_type {reinterpret_cast<const RTTI*>(&*lookup<void>())},// NOLINT
+                _flags {} {
             parse_flags();// Parse function flags
-            parse_signature<R, ARGS...>(_return_type, _param_types);
+            parse_signature<ReturnType, ARGS...>(_return_type, _param_types);
         }
 
         ~FunctionInfo() noexcept override = default;
@@ -121,7 +126,7 @@ namespace kstd::reflect {
 
         [[nodiscard]] auto is_same(const RTTI& other) const noexcept -> bool override {
             return other.get_element_type() == ElementType::FUNCTION &&
-                   *(other.template as_function<R, ARGS...>()) == *this;
+                   *(other.template as_function<ReturnType, ARGS...>()) == *this;
         }
 
         [[nodiscard]] inline auto get_name() const noexcept -> const std::string& {
@@ -132,8 +137,8 @@ namespace kstd::reflect {
             return _flags;
         }
 
-        [[nodiscard]] inline auto get_return_type() const noexcept -> const TypeInfo<R>& {
-            return *reinterpret_cast<const TypeInfo<R>*>(_return_type);// NOLINT
+        [[nodiscard]] inline auto get_return_type() const noexcept -> const TypeInfo<ReturnType>& {
+            return *reinterpret_cast<const TypeInfo<ReturnType>*>(_return_type);// NOLINT
         }
 
         [[nodiscard, maybe_unused]] inline auto get_param_types() const noexcept -> const std::vector<const RTTI*>& {
@@ -142,7 +147,7 @@ namespace kstd::reflect {
 
         template<usize INDEX>
         [[nodiscard]] inline auto get_param() const noexcept -> decltype(auto) {
-            return *reinterpret_cast<const TypeInfo<meta::PackElement<INDEX, meta::Pack<ARGS...>>>*>(// NOLINT
+            return *reinterpret_cast<const TypeInfo<PackElementT<INDEX, Pack<ARGS...>>>*>(// NOLINT
                     _param_types[INDEX]);
         }
 

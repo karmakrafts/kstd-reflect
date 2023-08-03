@@ -28,7 +28,7 @@
 
 namespace kstd::reflect {
     struct RTTI {
-        KSTD_DEFAULT_MOVE_COPY(RTTI)
+        KSTD_DEFAULT_MOVE_COPY(RTTI, RTTI)
 
         RTTI() noexcept = default;
 
@@ -53,51 +53,49 @@ namespace kstd::reflect {
 
         template<typename T>
         [[nodiscard]] inline auto as_variable() const noexcept -> Result<const VariableInfo<T>&> {
-            using namespace std::string_view_literals;
+            using namespace std::string_literals;
             const auto type = get_element_type();
 
             if(type != ElementType::VARIABLE && type != ElementType::FIELD) {
-                return make_error<const VariableInfo<T>&>("Invalid element type"sv);
+                return Error("Invalid element type"s);
             }
 
-            return make_ok<const VariableInfo<T>&>(static_cast<const VariableInfo<T>&>(*this));// NOLINT
+            return static_cast<const VariableInfo<T>&>(*this);// NOLINT
         }
 
         template<typename ET, typename T>
         [[nodiscard]] inline auto as_field() const noexcept -> Result<const FieldInfo<ET, T>&> {
-            using namespace std::string_view_literals;
+            using namespace std::string_literals;
 
             if(get_element_type() != ElementType::FIELD) {
-                return make_error<const FieldInfo<ET, T>&>("Invalid element type"sv);
+                return Error("Invalid element type"s);
             }
 
-            return make_ok<const FieldInfo<ET, T>&>(static_cast<const FieldInfo<ET, T>&>(*this));// NOLINT
+            return static_cast<const FieldInfo<ET, T>&>(*this);// NOLINT
         }
 
         template<typename R, typename... ARGS>
         [[nodiscard]] inline auto as_function() const noexcept -> Result<const FunctionInfo<R, ARGS...>&> {
-            using namespace std::string_view_literals;
+            using namespace std::string_literals;
             const auto type = get_element_type();
 
             if(type != ElementType::FUNCTION && type != ElementType::MEMBER_FUNCTION) {
-                return make_error<const FunctionInfo<R, ARGS...>&>("Invalid element type"sv);
+                return Error("Invalid element type"s);
             }
 
-            return make_ok<const FunctionInfo<R, ARGS...>&>(
-                    static_cast<const FunctionInfo<R, ARGS...>&>(*this));// NOLINT
+            return static_cast<const FunctionInfo<R, ARGS...>&>(*this);// NOLINT
         }
 
         template<typename ET, typename R, typename... ARGS>
         [[nodiscard]] inline auto as_member_function() const noexcept
                 -> Result<const MemberFunctionInfo<ET, R, ARGS...>&> {
-            using namespace std::string_view_literals;
+            using namespace std::string_literals;
 
             if(get_element_type() != ElementType::MEMBER_FUNCTION) {
-                return make_error<const MemberFunctionInfo<ET, R, ARGS...>&>("Invalid element type"sv);
+                return Error("Invalid element type"s);
             }
 
-            return make_ok<const MemberFunctionInfo<ET, R, ARGS...>&>(
-                    static_cast<const MemberFunctionInfo<ET, R, ARGS...>&>(*this));// NOLINT
+            return static_cast<const MemberFunctionInfo<ET, R, ARGS...>&>(*this);// NOLINT
         }
 
         [[nodiscard]] inline auto operator==(const RTTI& other) const noexcept -> bool {

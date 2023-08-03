@@ -21,7 +21,7 @@
 #include <gtest/gtest.h>
 #include <kstd/reflect/reflection.hpp>
 
-TEST(kstd_reflect, TestGlobalFunctions) {
+TEST(kstd_reflect, test_global_functions) {
     const auto info = KSTD_LOOKUP_FUN(foo::test_function);
 
     ASSERT_EQ(info->get_element_type(), kstd::reflect::ElementType::FUNCTION);
@@ -34,7 +34,7 @@ TEST(kstd_reflect, TestGlobalFunctions) {
     ASSERT_EQ(info->get_return_type(), *KSTD_LOOKUP_TYPE(kstd::u32));
 }
 
-TEST(kstd_reflect, TestMemberFunctions) {
+TEST(kstd_reflect, test_member_functions) {
     const auto info = KSTD_LOOKUP_FUN_M(foo::TestStruct::member_function);
 
     ASSERT_EQ(info->get_element_type(), kstd::reflect::ElementType::MEMBER_FUNCTION);

@@ -26,19 +26,25 @@
 
 namespace kstd::reflect {
     template<typename ET, typename T>
-    class FieldInfo : public VariableInfo<T> {
+    struct FieldInfo : public VariableInfo<T> {
+        using EnclosingType = ET;
+        using Type = T;
+
+        private:
+        using Self = FieldInfo<EnclosingType, Type>;
+
         protected:
         const RTTI* _enclosing_type;// NOLINT
         usize _offset;              // NOLINT
 
         public:
-        KSTD_DEFAULT_MOVE_COPY(FieldInfo)
+        KSTD_DEFAULT_MOVE_COPY(FieldInfo, Self)
 
         FieldInfo(std::string mangled_type_name, std::string type_name, const RTTI* enclosing_type,
-                  const std::string_view& name, usize offset) noexcept :
-                VariableInfo<T>(utils::move(mangled_type_name), utils::move(type_name), name),
-                _enclosing_type(enclosing_type),
-                _offset(offset) {
+                  const std::string& name, usize offset) noexcept :
+                VariableInfo<Type>(std::move(mangled_type_name), std::move(type_name), name),
+                _enclosing_type {enclosing_type},
+                _offset {offset} {
         }
 
         ~FieldInfo() noexcept override = default;
@@ -53,19 +59,20 @@ namespace kstd::reflect {
         }
 
         [[nodiscard]] auto is_same(const RTTI& other) const noexcept -> bool override {
-            return other.get_element_type() == ElementType::FIELD && *(other.template as_field<ET, T>()) == *this;
+            return other.get_element_type() == ElementType::FIELD &&
+                   *(other.template as_field<EnclosingType, Type>()) == *this;
         }
 
-        [[nodiscard]] inline auto get(const void* memory) const noexcept -> const T& {
-            return *reinterpret_cast<const T*>(reinterpret_cast<const u8*>(memory) + _offset);// NOLINT
+        [[nodiscard]] inline auto get(const void* memory) const noexcept -> const Type& {
+            return *reinterpret_cast<const Type*>(reinterpret_cast<const u8*>(memory) + _offset);// NOLINT
         }
 
-        inline auto set(void* memory, const T& value) const noexcept {
-            *reinterpret_cast<T*>(reinterpret_cast<u8*>(memory) + _offset) = value;// NOLINT
+        inline auto set(void* memory, const Type& value) const noexcept {
+            *reinterpret_cast<Type*>(reinterpret_cast<u8*>(memory) + _offset) = value;// NOLINT
         }
 
-        [[nodiscard, maybe_unused]] inline auto get_enclosing_type() const noexcept -> const TypeInfo<ET>& {
-            return *reinterpret_cast<const TypeInfo<ET>*>(_enclosing_type);// NOLINT
+        [[nodiscard, maybe_unused]] inline auto get_enclosing_type() const noexcept -> const TypeInfo<EnclosingType>& {
+            return *reinterpret_cast<const TypeInfo<EnclosingType>*>(_enclosing_type);// NOLINT
         }
 
         [[nodiscard]] inline auto get_offset() const noexcept -> usize {
