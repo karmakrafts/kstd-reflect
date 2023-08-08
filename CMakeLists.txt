@@ -9,7 +9,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake;")
 include(cmx)
 
 if (${KSTD_REFLECT_BUILD_TESTS})
-	cmx_include_scripts()
+    cmx_include_scripts()
     cmx_add_tests(kstd-reflect-tests "${CMAKE_SOURCE_DIR}/test")
     target_include_directories(kstd-reflect-tests PRIVATE "${CMAKE_SOURCE_DIR}/include")
     cmx_include_fmt(kstd-reflect-tests PRIVATE)
