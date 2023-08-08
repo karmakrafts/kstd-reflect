@@ -152,7 +152,7 @@ namespace kstd::reflect {
         const auto enclosing_type_result = lookup<ET>();
 
         if(!enclosing_type_result) {
-            return enclosing_type_result.template forward_error<const MemberFunctionInfo<ET, R, ARGS...>&>();
+            return enclosing_type_result.template forward<const MemberFunctionInfo<ET, R, ARGS...>&>();
         }
 
         const auto key = fmt::format("{}::{}({})", enclosing_type_result->get_mangled_type_name(), name,

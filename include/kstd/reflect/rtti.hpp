@@ -57,7 +57,7 @@ namespace kstd::reflect {
             const auto type = get_element_type();
 
             if(type != ElementType::VARIABLE && type != ElementType::FIELD) {
-                return Error("Invalid element type"s);
+                return Error {"Invalid element type"s};
             }
 
             return static_cast<const VariableInfo<T>&>(*this);// NOLINT
@@ -68,7 +68,7 @@ namespace kstd::reflect {
             using namespace std::string_literals;
 
             if(get_element_type() != ElementType::FIELD) {
-                return Error("Invalid element type"s);
+                return Error {"Invalid element type"s};
             }
 
             return static_cast<const FieldInfo<ET, T>&>(*this);// NOLINT
@@ -80,7 +80,7 @@ namespace kstd::reflect {
             const auto type = get_element_type();
 
             if(type != ElementType::FUNCTION && type != ElementType::MEMBER_FUNCTION) {
-                return Error("Invalid element type"s);
+                return Error {"Invalid element type"s};
             }
 
             return static_cast<const FunctionInfo<R, ARGS...>&>(*this);// NOLINT
@@ -92,7 +92,7 @@ namespace kstd::reflect {
             using namespace std::string_literals;
 
             if(get_element_type() != ElementType::MEMBER_FUNCTION) {
-                return Error("Invalid element type"s);
+                return Error {"Invalid element type"s};
             }
 
             return static_cast<const MemberFunctionInfo<ET, R, ARGS...>&>(*this);// NOLINT
