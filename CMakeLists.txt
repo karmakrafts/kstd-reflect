@@ -13,7 +13,6 @@ target_include_directories(kstd-reflect INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/i
 
 if (${KSTD_REFLECT_BUILD_TESTS})
     cmx_add_tests(kstd-reflect-tests "${CMAKE_CURRENT_SOURCE_DIR}/test")
-    cmx_include_gtest(kstd-reflect-tests PRIVATE)
     target_link_libraries(kstd-reflect-tests PRIVATE kstd-reflect)
 	add_dependencies(kstd-reflect-tests kstd-reflect)
 endif ()
